@@ -77,4 +77,17 @@ static  NSString *createTB_Run = @"CREATE TABLE IF NOT EXISTS RUN_HISTORY (ID IN
     [db close];
     return array;
 }
++ (void)deleteRunDataWithTime:(NSString *)time
+{
+    FMDatabase *db = [DataBaseHelper creatdb];
+    if ([db open]) {
+        BOOL rs = [db executeUpdateWithFormat:@"delete from RUN_HISTORY where TIME = %@",time];
+        if (rs) {
+            NSLog(@"删除成功");
+        }else{
+            NSLog(@"删除失败");
+        }
+    }
+
+}
 @end

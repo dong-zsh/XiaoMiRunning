@@ -40,6 +40,10 @@
     [self.navigationController popViewControllerAnimated:YES];
 }
 #pragma mark UITableViewDelegate
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    return 50;
+}
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
     return dataArray.count;
@@ -58,6 +62,24 @@
     ShowLocusViewController *LocusVC = [[ShowLocusViewController alloc] init];
     LocusVC.time = dataArray[indexPath.row];
     [self.navigationController pushViewController:LocusVC animated:YES];
+}
+- (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    return YES;
+}
+- (nullable NSArray<UITableViewRowAction *> *)tableView:(UITableView *)tableView editActionsForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    UITableViewRowAction *deleteAction = [UITableViewRowAction rowActionWithStyle:UITableViewRowActionStyleDestructive title:@"删除" handler:^(UITableViewRowAction * _Nonnull action, NSIndexPath * _Nonnull indexPath) {
+        //删除数据库
+        [DataBaseHelper deleteRunDataWithTime:dataArray[indexPath.row]];
+        //删除数据
+        [_historyTable beginUpdates];
+        NSIndexPath *path = [NSIndexPath indexPathForRow:indexPath.row inSection:0];
+        [dataArray removeObjectAtIndex:indexPath.row];
+        [_historyTable deleteRowsAtIndexPaths:@[path] withRowAnimation:UITableViewRowAnimationLeft];
+        [_historyTable endUpdates];
+    }];
+    return @[deleteAction];
 }
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];

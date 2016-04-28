@@ -18,4 +18,6 @@
 + (NSData *)selectRunDataWithTime:(NSString *)time;
 //查询所有的时间
 + (NSMutableArray *)queryAlltime;
+//根据时间删除记录
++ (void)deleteRunDataWithTime:(NSString *)time;
 @end
