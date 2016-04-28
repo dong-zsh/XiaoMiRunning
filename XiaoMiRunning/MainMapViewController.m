@@ -256,7 +256,7 @@
     [coorArray addObject:location];
     //计算本次定位数据与上次定位数据之间的距离
     CGFloat distance = [location distanceFromLocation:lastLocation];
-    if (distance < 5 || distance > 50 || location.speed < 0.5) {
+    if (distance < 5 || distance > 100 || location.speed < 0.5) {
         //如果移动距离小于5或大于50，不绘制图层
         NSLog(@"偏移距离%0.0f------无效点",distance);
         return;
