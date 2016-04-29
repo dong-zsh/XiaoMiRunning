@@ -41,13 +41,16 @@
     //取出所有的点
     [self selectAllDataWithTime];
     //设置当前地图的显示范围，根据第一个点
-    firstLocation = (CLLocation *)rundataArr[0];
-    lastLocation = (CLLocation *)[rundataArr lastObject];
-    [self passLocationValueWithLocation:firstLocation];
-    //画出折线图
-    [self drawLocusMap];
-    //添加开始，结束标注
-    [self setAnnotation];
+    if (rundataArr.count > 0) {
+        firstLocation = (CLLocation *)rundataArr[0];
+        lastLocation = (CLLocation *)[rundataArr lastObject];
+        [self passLocationValueWithLocation:firstLocation];
+        //画出折线图
+        [self drawLocusMap];
+        //添加开始，结束标注
+        [self setAnnotation];
+    }
+    
     
     
 }
@@ -57,8 +60,8 @@
     startAnn.coordinate = firstLocation.coordinate;
     startAnn.title = @"开始";
     BMKPointAnnotation *stopAnn = [[BMKPointAnnotation alloc] init];
-    startAnn.coordinate = lastLocation.coordinate;
-    startAnn.title = @"结束";
+    stopAnn.coordinate = lastLocation.coordinate;
+    stopAnn.title = @"结束";
     NSArray *arr = [NSArray arrayWithObjects:startAnn,stopAnn, nil];
     [mapView addAnnotations:arr];
     

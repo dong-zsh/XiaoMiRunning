@@ -37,6 +37,7 @@
     UIButton *startBtn;
     UIButton *stopBtn;
     CLLocation *lastLocation;//保存上一个坐标点
+    BMKUserLocation *newUserLocal;
 }
 @end
 
@@ -66,7 +67,6 @@
     locService.delegate = self;
     locService.desiredAccuracy = kCLLocationAccuracyNearestTenMeters;
     locService.distanceFilter = kCLDistanceFilterNone;
-    [locService startUserLocationService];
     //初始化mapview
     [self setUpMapView];
     //开启百度定位
@@ -92,6 +92,7 @@
     mapView = [[BMKMapView alloc] initWithFrame:[UIScreen mainScreen].bounds];
     [self setStartButton];
     [self setStopButton];
+    [self setBackNowLocalImage];
     //地图类型
     [mapView setMapType:BMKMapTypeStandard];
     mapView.showsUserLocation = NO;
@@ -99,6 +100,23 @@
     mapView.showsUserLocation = YES;
     mapView.delegate = self;
     self.view = mapView;
+}
+//添加回到自己位置按钮
+- (void)setBackNowLocalImage
+{
+    UIImageView *localImage = [[UIImageView alloc] initWithFrame:CGRectMake(15, 580, 45, 45)];
+    localImage.image = [UIImage imageNamed:@"ic-heart-o"];
+    localImage.userInteractionEnabled = YES;
+    UITapGestureRecognizer *tapImage = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tapLocalImage:)];
+    [localImage addGestureRecognizer:tapImage];
+    [mapView addSubview:localImage];
+}
+- (void)tapLocalImage:(UIGestureRecognizer *)sender
+{
+    [self passLocationValueWithLocation:lastLocation];
+    [mapView updateLocationData:newUserLocal];
+
+    
 }
 - (void)setStartButton
 {
@@ -248,27 +266,29 @@
     //插入数据库
     [DataBaseHelper insertRunDataWithdic:saveDic];
 }
-- (void)updateMapViewShowWithLOcation:(CLLocation *)location
+- (void)updateMapViewShowWithLOcation:(BMKUserLocation *)location
 {
-    NSLog(@"%@",location);
+    NSLog(@"%@",location.location);
     [locService stopUserLocationService];
-    //收集坐标dian
-    [coorArray addObject:location];
     //计算本次定位数据与上次定位数据之间的距离
-    CGFloat distance = [location distanceFromLocation:lastLocation];
-    if (distance < 5 || distance > 100 || location.speed < 0.5) {
+    CGFloat distance = [location.location distanceFromLocation:lastLocation];
+    //该判断试用于步行或跑步
+    if (distance < 5 || distance > 80 || location.location.speed < 0) {
         //如果移动距离小于5或大于50，不绘制图层
         NSLog(@"偏移距离%0.0f------无效点",distance);
         return;
     }
+    //收集坐标dian
+    [coorArray addObject:location.location];
     //直接根据两点画出实时轨迹图
+    //lastLocation 使用BMKUserLocation类，覆盖层画不出来？？？
     CLLocationCoordinate2D coors[2] = {0};
     coors[0] = lastLocation.coordinate;
-    coors[1] = location.coordinate;
+    coors[1] = location.location.coordinate;
     BMKPolyline *polyline = [BMKPolyline polylineWithCoordinates:coors count:2];
     [mapView addOverlay:polyline];
     //更新上一个点
-    lastLocation = location;
+    lastLocation = location.location;
     
 }
 
@@ -320,10 +340,11 @@
     //实时更新用户的最新位置
     if (alltime == YES) {
         lastLocation = userLocation.location;
+        newUserLocal = userLocation;
     }
 
     if (trackMode == YES) {
-        [self updateMapViewShowWithLOcation:userLocation.location];
+        [self updateMapViewShowWithLOcation:userLocation];
     }
     
 }
